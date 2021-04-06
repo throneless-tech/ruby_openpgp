@@ -1,3 +1,10 @@
+GIT
+  remote: https://gitlab.com/dorle/sequoia-ruby-ffi
+  revision: 67c78a24e96374070a1ef8ee56e50f646209ed10
+  specs:
+    sequoia-ruby-ffi (0.0.0)
+      ffi (~> 1)
+
 PATH
   remote: .
   specs:
@@ -8,6 +15,7 @@ GEM
   specs:
     ast (2.4.2)
     diff-lcs (1.4.4)
+    ffi (1.15.0)
     parallel (1.20.1)
     parser (3.0.1.0)
       ast (~> 2.4.1)
@@ -50,6 +58,7 @@ DEPENDENCIES
   rspec (~> 3.0)
   rubocop (~> 1.7)
   ruby_openpgp!
+  sequoia-ruby-ffi!
 
 BUNDLED WITH
    2.2.9
