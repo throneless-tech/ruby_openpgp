@@ -8,4 +8,9 @@ RSpec.describe RubyOpenpgp do
   it "does something useful" do
     expect(false).to eq(true)
   end
+
+  # it decrypts a message
+  # it encrypts a message
+  # it verifies keys for sender
+  # its verifies keys for recipient
 end
