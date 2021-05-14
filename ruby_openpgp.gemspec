@@ -4,7 +4,7 @@ require_relative "lib/ruby_openpgp/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "ruby_openpgp"
-  spec.version       = RubyOpenpgp::VERSION
+  spec.version       = RubyOpenPGP::VERSION
   spec.authors       = ["Rae Gaines"]
   spec.email         = ["rae@throneless.tech"]
 
@@ -34,4 +34,8 @@ Gem::Specification.new do |spec|
 
   # For more information and examples about making a new gem, checkout our
   # guide at: https://bundler.io/guides/creating_gem.html
+  spec.add_dependency 'ffi',  '~> 1'
+  spec.add_dependency 'rake',  '~> 13'
+  spec.add_dependency 'rspec',  '~> 3'
+  spec.add_dependency 'rubocop',  '~> 1.7'
 end

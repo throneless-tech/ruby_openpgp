@@ -1,14 +1,11 @@
-GIT
-  remote: https://gitlab.com/dorle/sequoia-ruby-ffi
-  revision: 67c78a24e96374070a1ef8ee56e50f646209ed10
-  specs:
-    sequoia-ruby-ffi (0.0.0)
-      ffi (~> 1)
-
 PATH
   remote: .
   specs:
     ruby_openpgp (0.1.0)
+      ffi (~> 1)
+      rake (~> 13)
+      rspec (~> 3)
+      rubocop (~> 1.7)
 
 GEM
   remote: https://rubygems.org/
@@ -17,7 +14,7 @@ GEM
     diff-lcs (1.4.4)
     ffi (1.15.0)
     parallel (1.20.1)
-    parser (3.0.1.0)
+    parser (3.0.1.1)
       ast (~> 2.4.1)
     rainbow (3.0.0)
     rake (13.0.3)
@@ -36,17 +33,17 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.10.0)
     rspec-support (3.10.2)
-    rubocop (1.12.1)
+    rubocop (1.14.0)
       parallel (~> 1.10)
       parser (>= 3.0.0.0)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
       rexml
-      rubocop-ast (>= 1.2.0, < 2.0)
+      rubocop-ast (>= 1.5.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 3.0)
-    rubocop-ast (1.4.1)
-      parser (>= 2.7.1.5)
+    rubocop-ast (1.5.0)
+      parser (>= 3.0.1.1)
     ruby-progressbar (1.11.0)
     unicode-display_width (2.0.0)
 
@@ -54,11 +51,7 @@ PLATFORMS
   x86_64-darwin-18
 
 DEPENDENCIES
-  rake (~> 13.0)
-  rspec (~> 3.0)
-  rubocop (~> 1.7)
   ruby_openpgp!
-  sequoia-ruby-ffi!
 
 BUNDLED WITH
    2.2.9

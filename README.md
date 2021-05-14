@@ -1,4 +1,4 @@
-# RubyOpenpgp
+# RubyOpenPGP
 
 OpenPGP support for Ruby projects, built on the back of [Sequoia-PGP Ruby bindings](https://gitlab.com/dorle/sequoia-ruby-ffi).
 
@@ -38,4 +38,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the RubyOpenpgp project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/throneless-tech/ruby_openpgp/blob/master/CODE_OF_CONDUCT.md).
+Everyone interacting in the RubyOpenPGP project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/throneless-tech/ruby_openpgp/blob/master/CODE_OF_CONDUCT.md).

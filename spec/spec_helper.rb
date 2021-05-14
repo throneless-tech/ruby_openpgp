@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-
+require "rspec"
 require "ruby_openpgp"
 
 RSpec.configure do |config|
