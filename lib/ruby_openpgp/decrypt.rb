@@ -1,4 +1,4 @@
-require 'sequoia-ruby-ffi'
+require_relative "../sequoia_openpgp"
 
 def main
   source = OpenPGP::IOReader.new_from_file("test/unit/data/messages/encrypted-to-testy.gpg")

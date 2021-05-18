@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "sequoia_openpgp"
+require_relative "../lib/sequoia_openpgp"
 
 RSpec.describe RubyOpenPGP do
   it "has a version number" do
@@ -11,12 +11,12 @@ RSpec.describe RubyOpenPGP do
     expect(OpenPGP).not_to be nil
   end
 
-  it "has a method to encrypt a message" do
-    expect(RubyOpenPGP::Encrpyt).not_to be nil
+  it "has a class to encrypt a message" do
+    expect(RubyOpenPGP::Encrypt).not_to be nil
   end
 
-  it "has a method to decrypt a message" do
-    expect(RubyOpenPGP::Decrpyt).not_to be nil
+  it "has a class to decrypt a message" do
+    expect(RubyOpenPGP::Decrypt).not_to be nil
   end
 
   # it decrypts a message
