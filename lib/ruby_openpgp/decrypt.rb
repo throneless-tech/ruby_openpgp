@@ -1,9 +1,9 @@
 require_relative "../sequoia_openpgp"
 
-def main
-  source = OpenPGP::IOReader.new_from_file("test/unit/data/messages/encrypted-to-testy.gpg")
+def main(file, key)
+  source = OpenPGP::IOReader.new_from_file(file)
 
-  cert = OpenPGP::Cert.new_from_file("test/unit/data/keys/testy-private.pgp")
+  cert = OpenPGP::Cert.new_from_file(key)
 
   policy = OpenPGP::StandardPolicy.new
   time = 1554542219
@@ -51,5 +51,7 @@ def check_layers(message_structure)
 end
 
 if __FILE__ == $0
-  main
+  file = ARGV[0]
+  key = ARGV[1]
+  main(file, key)
 end
