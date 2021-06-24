@@ -152,11 +152,7 @@ module OpenPGP
 
         # call decrypt to get the right session_key
         sk, algo, fingerprint = get_session_key.call(pkesks, skesks)
-
-        puts '****************************'
-        puts decrypt_fn.inspect
-        puts '****************************'
-
+        
         # call decrypt_fn with the session_key
         ret = decrypt_fn.call(decrypt_cookie, algo, sk.ref)
 
