@@ -1,10 +1,10 @@
 require_relative "../sequoia_openpgp"
 
-def main(file, message)
+def main(file, key)
   if __FILE__ == $0
     sink = OpenPGP::IOWriter.new_from_file(file)
     writer = OpenPGP::WriterStack.new_message(sink)
-    cert = OpenPGP::Cert.new_from_file(@public_key)
+    cert = OpenPGP::Cert.new_from_file(key)
     passwords = ['p', 'f']
 
     recipients = []
@@ -30,3 +30,5 @@ def main(file, message)
     writer.finalize
   end
 end
+
+main(ARGV[0], ARGV[1])
