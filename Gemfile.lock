@@ -49,9 +49,10 @@ GEM
 
 PLATFORMS
   x86_64-darwin-18
+  x86_64-linux
 
 DEPENDENCIES
   ruby_openpgp!
 
 BUNDLED WITH
-   2.2.9
+   2.2.15

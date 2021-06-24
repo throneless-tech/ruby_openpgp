@@ -1,14 +1,15 @@
 require_relative "../sequoia_openpgp"
 
-def main(file, key)
+def main(file, pubkey, privkey, message)
   if __FILE__ == $0
     sink = OpenPGP::IOWriter.new_from_file(file)
     writer = OpenPGP::WriterStack.new_message(sink)
-    cert = OpenPGP::Cert.new_from_file(key)
+    pub = OpenPGP::Cert.new_from_file(pubkey)
+    priv = OpenPGP::Cert.new_from_file(privkey)
     passwords = ['p', 'f']
 
     recipients = []
-    cert.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
+    pub.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
       .for_transport_encryption
       .for_storage_encryption
       .each do |ka|
@@ -16,7 +17,7 @@ def main(file, key)
     end
 
     sigs = []
-    cert.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
+    priv.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
       .secret_keys
       .for_signing
       .each do |ka|
@@ -24,11 +25,11 @@ def main(file, key)
     end
 
     writer.encrypt(passwords, recipients, 0)
-    writer.sign(sigs, 0)
+    #writer.sign(sigs, 0)
     writer.literal
     writer.write_all(message)
     writer.finalize
   end
 end
 
-main(ARGV[0], ARGV[1])
+main(ARGV[0], ARGV[1], ARGV[2], ARGV[3])
