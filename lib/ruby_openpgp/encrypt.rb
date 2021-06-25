@@ -5,7 +5,7 @@ def main(file, pubkey, privkey, message)
     sink = OpenPGP::IOWriter.new_from_file(file)
     writer = OpenPGP::WriterStack.new_message(sink)
     pub = OpenPGP::Cert.new_from_file(pubkey)
-    priv = OpenPGP::Cert.new_from_file(privkey)
+    # priv = OpenPGP::Cert.new_from_file(privkey)
     passwords = ['p', 'f']
 
     recipients = []
@@ -16,13 +16,13 @@ def main(file, pubkey, privkey, message)
       recipients << OpenPGP::Recipient.new_from_key(ka.key)
     end
 
-    sigs = []
-    priv.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
-      .secret_keys
-      .for_signing
-      .each do |ka|
-      sigs << ka.key.clone.into_key_pair.as_signer
-    end
+    # sigs = []
+    # priv.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
+    #   .secret_keys
+    #   .for_signing
+    #   .each do |ka|
+    #   sigs << ka.key.clone.into_key_pair.as_signer
+    # end
 
     writer.encrypt(passwords, recipients, 0)
     #writer.sign(sigs, 0)

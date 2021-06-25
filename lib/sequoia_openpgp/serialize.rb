@@ -76,7 +76,7 @@ module OpenPGP
       mem_buf = FFI::MemoryPointer.new(:char, bytes.bytesize)
       mem_buf.put_bytes(0, bytes)
       status = OpenPGP.pgp_writer_stack_write_all(error, @ref, mem_buf, bytes.bytesize)
-      unless status == PGP_STATUS_SUCCESS
+      unless status == 0 # PGP_STATUS_SUCCESS
         raise Error.new(error.get_pointer(0))
       end
       Status.new(status)
