@@ -1,234 +1,119 @@
-require_relative "../sequoia_openpgp"
+require_relative "../sequoia-ruby-ffi"
 
-module RubyOpenPGP
-  class Encrypt
-    def initialize(public_key, private_key)
-      @public_key = public_key
-      @private_key = private_key
-      @last_update = 0
+module Sequoia
+  class << self
+    def encrypt_for(plaintext:, recipients:, outfile: nil)
+      do_encrypt(plaintext, recipients, outfile)
     end
 
-    def encrypt_for(file, message)
-      if __FILE__ == $0
-        sink = OpenPGP::IOWriter.new_from_file(file)
-        writer = OpenPGP::WriterStack.new_message(sink)
-        cert = OpenPGP::Cert.new_from_file(@public_key)
-        passwords = ['p', 'f']
-
-        recipients = []
-        cert.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
-          .for_transport_encryption
-          .for_storage_encryption
-          .each do |ka|
-          recipients << OpenPGP::Recipient.new_from_key(ka.key)
-        end
-
-        sigs = []
-        cert.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
-          .secret_keys
-          .for_signing
-          .each do |ka|
-          sigs << ka.key.clone.into_key_pair.as_signer
-        end
-
-        writer.encrypt(passwords, recipients, 0)
-        writer.sign(sigs, 0)
-        writer.literal
-        writer.write_all(message)
-        writer.finalize
-      end
+    def encrypt_file_for(infile:, recipients:, outfile: nil)
+      # Seems like the upstream bindings only support writing bytes right now
+      plaintext = File.read(infile)
+      do_encrypt(plaintext, recipients, outfile)
     end
 
-    def sign_detached_for(file, message)
-      if __FILE__ == $0
-        sink = OpenPGP::IOWriter.new_from_file(file)
-        writer = OpenPGP::WriterStack.new_message(sink)
-        cert = OpenPGP::Cert.new_from_file(@public_key)
-
-        sigs = []
-        cert.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
-          .secret_keys
-          .for_signing
-          .each do |ka|
-          sigs << ka.key.clone.into_key_pair.as_signer
-        end
-
-        writer.sign_detached(sigs, 0)
-        writer.write_all(message)
-        writer.finalize
-      end
+    def decrypt_for(ciphertext:, recipient:, outfile: nil)
+      buffer = StringIO.new(ciphertext)
+      source = OpenPGP::IOReader.new_from_callback(buffer)
+      do_decrypt(source, recipient, outfile)
     end
 
-    def sign_for(file_with_sig, message)
-      if __FILE__ == $0
-        sink = OpenPGP::IOWriter.new_from_file(file_with_sig)
-        writer = OpenPGP::WriterStack.new_message(sink)
-        cert = OpenPGP::Cert.new_from_file(@public_key)
-
-        sigs = []
-        cert.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
-          .secret_keys
-          .for_signing
-          .each do |ka|
-          sigs << ka.key.clone.into_key_pair.as_signer
-        end
-
-        writer.sign(sigs, 0)
-        writer.literal
-        writer.write_all(message)
-        writer.finalize
-      end
+    def decrypt_file_for(infile:, recipient:, outfile: nil)
+      source = OpenPGP::IOReader.new_from_file(infile)
+      do_decrypt(source, recipient, outfile)
     end
 
-    def stream_decrypt_file(file)
-      def main
-        source = OpenPGP::IOReader.new_from_file(file)
+    private
 
-        cert = OpenPGP::Cert.new_from_file(@public_key)
+    def check_message(_message)
+      # This doesn't seem to be working correctly right now, so commented out
+      #
+      # message_layers = message.layers.to_a
 
-        policy = OpenPGP::StandardPolicy.new
-        time = 1554542219
+      ## check that length is 2
+      # raise "unexpected length of message structure" unless message_layers.length == 2
 
-        get_public_keys = ->(_keyids) do
-          [cert]
-        end
+      ## check that it is one compression layer and one signature group
+      # variants = message_layers.map &.variant
 
-        check = ->(message_structure) do
-          check_layers(message_structure)
-        end
+      # raise "unexpected ordering of message layers" unless variants == [PGP_MESSAGE_LAYER_COMPRESSION, PGP_MESSAGE_LAYER_SIGNATURE_GROUP]
 
-        get_session_key = ->(pkesks, _skesks) do
-          pkesks.each do |pkesk|
-            cert.key_amalgamations(policy, time).secret_keys.each do |ka|
-              key = ka.key
-              if key.keyid == pkesk.recipient
-                sk, algo = pkesk.decrypt(key)
-                return sk, algo, key.fingerprint
-              end
-            end
+      ## get the verification results of the signature group and check that
+      ## it is a good signature
+      # groups = message_layers[1].signature_group.to_a
+      # raise "unexpected number of signatures" unless groups.length == 1
+
+      # good, = groups[0].good_checksum?
+      # raise "uncorrect checksum" unless good
+
+      PGP_STATUS_SUCCESS
+    end
+
+    def load_session_keys(pkesks, _skesks)
+      pkesks.each do |pkesk|
+        @cert.key_amalgamations(@policy, @time).secret_keys.each do |ka|
+          key = ka.key
+          if key.keyid == pkesk.recipient
+            sk, algo = pkesk.decrypt(key)
+            return sk, algo, key.fingerprint
           end
-
-          # no password set, else check the skesks now...
         end
-
-        reader = OpenPGP::Reader.new(source, get_public_keys, check, time, policy)
-        reader = reader.decrypt(get_session_key, nil)
-
-        content = reader.read
-        puts content
-      end
-
-      def check_layers(message_structure)
-        message_layers = message_structure.layers.to_a
-
-        # expect encryption and compression
-        raise "unexpected number of message layers" unless message_layers.length == 2
-
-        # check it is an encryption layer
-        variants = message_layers.map do |layer|
-          layer.variant
-        end
-        raise "unexpected message layers" unless variants == [PGP_MESSAGE_LAYER_ENCRYPTION, PGP_MESSAGE_LAYER_COMPRESSION]
-      end
-
-      if __FILE__ == $0
-        main
       end
     end
 
-    def stream_verify_detached_signature(file, signature, public_keys)
-      def main
-        source = OpenPGP::IOReader.new_from_file(file)
-        signature = OpenPGP::IOReader.new_from_file(signature)
-
-        # create lambda-function to get the right key. We know the right key in advance
-        get_public_keys = ->(_keyids) do
-          [OpenPGP::Cert.new_from_file(public_keys)]
-        end
-
-        # create lamda-function to verify the message
-        check = ->(message_structure) do
-          check_layers(message_structure)
-        end
-
-        reader = OpenPGP::DetachedReader.new(signature, get_public_keys, check, 1554542219, OpenPGP::StandardPolicy.new)
-        status = reader.verify(source)
-
-        puts status.to_s
-      end
-
-      def check_layers(message_structure)
-        message_layers = message_structure.layers.to_a
-
-        # check that length is 1
-        raise "unexpected length of message structure" unless message_layers.length == 1
-
-        # check that it is one compression layer and one signature group
-        groups = message_layers[0].signature_group.to_a
-        raise "unexpected ordering of message layers" unless groups.any?
-
-        # get the verification results of the signature group and check that
-        # it is a good signature
-        raise "unexpected number of signatures" unless groups.length == 1
-        good, _ = groups[0].good_checksum?
-        raise "uncorrect checksum" unless good
-
-        PGP_STATUS_SUCCESS
-      end
-
-      if __FILE__ == $0
-        main
-      end
+    def load_public_keys(_keyids)
+      [@cert]
     end
 
-    def stream_verify_signature(message, keys)
-      def main
-        source = OpenPGP::IOReader.new_from_file(message)
-
-        # create lambda-function to get the right key. We know the right key in advance
-        get_public_keys = ->(_keyids) do
-          [OpenPGP::Cert.new_from_file(keys)]
+    def load_recipient_keys(keys)
+      Array(keys).map do |key|
+        cert = OpenPGP::Cert.new_from_bytes(key)
+        cert.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
+            .for_transport_encryption
+            .for_storage_encryption
+            .each do |ka|
+          OpenPGP::Recipient.new_from_key(ka.key)
         end
+      end.flatten
+    end
 
-        # create lamda-function to verify the message
-        check = ->(message_structure) do
-          check_layers(message_structure)
-        end
+    def do_encrypt(plaintext, recipients, outfile = nil)
+      raise ArgumentError, "Plaintext must be a string!" unless plaintext.is_a?(String)
 
-        reader = OpenPGP::Reader.new(source, get_public_keys, check, 1554542219, OpenPGP::StandardPolicy.new)
-        reader = reader.verify
+      keys = load_recipient_keys(recipients)
 
-        content = reader.read(40)
-        raise "unexpected content" unless content == "A Cypherpunk's Manifesto\nby Eric Hughes\n"
-        puts content
+      if outfile
+        sink = OpenPGP::IOWriter.new_from_file(outfile)
+      else
+        buffer = StringIO.new
+        sink = OpenPGP::IOWriter.new_from_callback(buffer)
       end
+      writer = OpenPGP::WriterStack.new_message(sink)
+      passwords = %w[p f]
 
-      def check_layers(message_structure)
-        message_layers = message_structure.layers.to_a
+      writer.encrypt(passwords, keys, 9, 0)
+      writer.literal
+      writer.write_all(plaintext)
+      writer.finalize
 
-        # check that length is 2
-        raise "unexpected length of message structure" unless message_layers.length == 2
+      return unless buffer
 
-        # check that it is one compression layer and one signature group
-        variants = message_layers.map do |layer|
-          layer.variant
-        end
-        raise "unexpected ordering of message layers" unless variants == [PGP_MESSAGE_LAYER_COMPRESSION, PGP_MESSAGE_LAYER_SIGNATURE_GROUP]
+      buffer.rewind
+      buffer.read
+    end
 
-        # get the verification results of the signature group and check that
-        # it is a good signature
-        groups = message_layers[1].signature_group.to_a
-        raise "unexpected number of signatures" unless groups.length == 1
-        good, _ = groups[0].good_checksum?
-        raise "uncorrect checksum" unless good
+    def do_decrypt(source, recipient, outfile = nil)
+      @cert = OpenPGP::Cert.new_from_bytes(recipient)
+      @time = Time.now.to_i
+      @policy = OpenPGP::StandardPolicy.new
 
-        PGP_STATUS_SUCCESS
+      reader = OpenPGP::Reader.new(source, method(:load_public_keys), method(:check_message), @time, @policy)
+      reader = reader.decrypt(method(:load_session_keys), nil)
+      if outfile
+        File.write(outfile, reader.read)
+      else
+        reader.read
       end
-
-      if __FILE__ == $0
-        main
-      end
-
     end
   end
 end

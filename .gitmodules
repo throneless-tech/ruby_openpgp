@@ -1,0 +1,4 @@
+[submodule "lib/sequoia-ruby-ffi"]
+	path = lib/sequoia-ruby-ffi
+	url = https://gitlab.com/pbz/sequoia-ruby-ffi.git
+	branch = fix-rake-install
