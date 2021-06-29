@@ -59,6 +59,7 @@ module Sequoia
           end
         end
       end
+      raise "Not a valid recipient for this message!"
     end
 
     def load_public_keys(_keyids)
@@ -71,9 +72,9 @@ module Sequoia
         cert.key_amalgamations(OpenPGP::StandardPolicy.new, Time.now.to_i)
             .for_transport_encryption
             .for_storage_encryption
-            .each do |ka|
-          OpenPGP::Recipient.new_from_key(ka.key)
-        end
+            .map do |ka|
+              OpenPGP::Recipient.new_from_key(ka.key)
+            end
       end.flatten
     end
 
