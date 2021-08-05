@@ -1,4 +1,5 @@
-require_relative "../sequoia-ruby-ffi"
+# require_relative "../sequoia-ruby-ffi"
+require "sequoia-ruby-ffi"
 
 module Sequoia
   class << self

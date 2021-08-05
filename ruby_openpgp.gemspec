@@ -5,8 +5,8 @@ require_relative "lib/ruby_openpgp/version"
 Gem::Specification.new do |spec|
   spec.name          = "ruby_openpgp"
   spec.version       = RubyOpenPGP::VERSION
-  spec.authors       = ["Rae Gaines"]
-  spec.email         = ["rae@throneless.tech"]
+  spec.authors       = ["Rae Gaines", "Josh King"]
+  spec.email         = ["team@throneless.tech"]
 
   spec.summary       = "An OpenPGP implementation for Ruby."
   spec.description   = "OpenPGP support for Ruby projects, built on the back of Sequoia-PGP Ruby bindings."
