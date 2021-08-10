@@ -1,11 +1,3 @@
-GIT
-  remote: https://gitlab.com/pbz/sequoia-ruby-ffi.git
-  revision: 2bc9dc0c5c1525d676575bcf81a9474ccbfc4d92
-  branch: fix-rake-install
-  specs:
-    sequoia-ruby-ffi (0.0.0)
-      ffi (~> 1)
-
 PATH
   remote: .
   specs:
@@ -60,7 +52,6 @@ PLATFORMS
 
 DEPENDENCIES
   ruby_openpgp!
-  sequoia-ruby-ffi!
 
 BUNDLED WITH
    2.2.15
