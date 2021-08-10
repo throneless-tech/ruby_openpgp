@@ -1,0 +1,99 @@
+require "rake/testtask"
+
+Rake::TestTask.new do |t|
+  t.libs << "test"
+  t.test_files = FileList['test/unit/tc_*.rb']
+  t.verbose = true
+end
+
+require 'fileutils'
+require 'open3'
+require_relative 'lib/openpgp/types_generator'
+
+GEM_PATH = File.dirname(__FILE__)
+
+SEQUOIA_VERSION = '0.22.0'
+
+desc 'Install necessary files '
+task :install do
+  check_dependencies
+  generate_types
+end
+
+# check for dependencies (pkg-config, sequoia, gcc)
+def check_dependencies
+  # pkg-config
+  _, stderr = Open3.capture2('pkg-config', '--version')
+  unless stderr.success?
+    raise StandardError.new('pkg-config is not installed. Please install pkg-config')
+  end
+
+  # sequoia
+  stdout, stderr = Open3.capture2('pkg-config', '--modversion', 'sequoia-openpgp')
+  unless stderr.success?
+    error = "sequoia is not installed. Please install sequoia version" +
+            SEQUOIA_VERSION + ". If sequoia is already installed, please add the \
+          directory containing sequoia-openpgp.pc to your PKG_CONFIG_PATH"
+    raise StandardError.new(error)
+  end
+  unless stdout.strip == SEQUOIA_VERSION
+    error = "sequoia is installed in the wrong version. Please install \
+           sequoia version " + SEQUOIA_VERSION
+    raise StandardError.new(error)
+  end
+
+  # gcc
+  _, stderr = Open3.capture2('gcc', '--version')
+  unless stderr.success?
+    raise StandardError.new('gcc is not installed. Please install gcc')
+  end
+end
+
+def generate_types
+  # create tmp dir and change to it
+  cwd = FileUtils.pwd
+
+  FileUtils.cd(GEM_PATH) do |gem_path|
+    if File.directory?('tmp')
+      FileUtils.rm_r('tmp')
+    end
+
+    FileUtils.mkdir('tmp')
+
+    FileUtils.cd('tmp') do |dir|
+      cflags, stderr = Open3.capture2("pkg-config", "--cflags", "sequoia-openpgp")
+      unless stderr.success?
+        raise StandardError.new("Error extracting cflags with pkg-config: " + stderr)
+      end
+
+      cflags.strip!
+      if cflags.empty?
+        cflags = nil
+      end
+
+      c_file = 'types_generator.c'
+      rb_file = 'openpgp_types.rb'
+      # generate types
+      TypesGenerator.generate(cflags, c_file, rb_file)
+
+      # compile c programm
+      stdout, stderr = Open3.capture2(*(["gcc", cflags, c_file].compact))
+      unless stderr.success?
+        raise StandardError.new("Error compiling types_generator.c: #{stderr}")
+      end
+
+      # execute c program
+      _, stderr = Open3.capture2('./a.out')
+      unless stderr.success?
+        raise StandardError.new("Error executing ./a.out: " + stderr)
+      end
+
+      # move generated types to specific location
+      FileUtils.mv(rb_file, '../lib/openpgp/types.rb')
+    end
+
+    # delete tmp files and tmp dir
+    FileUtils.rm_r('tmp')
+  end
+  FileUtils.cd(cwd)
+end

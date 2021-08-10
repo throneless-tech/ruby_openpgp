@@ -1,0 +1,8 @@
+image: registry.gitlab.com/sequoia-pgp/build-docker-image/sequoia:latest
+
+test:
+  script:
+    - apt update -y -qq
+    - apt install -y -qq --no-install-recommends ruby rake ruby-ffi
+    - rake install
+    - rake test

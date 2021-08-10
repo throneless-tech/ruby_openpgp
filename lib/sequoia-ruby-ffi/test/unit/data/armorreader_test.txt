@@ -1,0 +1,7 @@
+-----BEGIN PGP ARMORED FILE-----
+Key0: Value0
+Key1: Value1
+
+SGVsbG8gd29ybGQh
+=s4Gu
+-----END PGP ARMORED FILE-----
