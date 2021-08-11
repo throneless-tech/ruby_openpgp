@@ -15,12 +15,12 @@ module Sequoia
 
     def decrypt_for(ciphertext:, recipient:, outfile: nil)
       buffer = StringIO.new(ciphertext)
-      source = OpenPGP::IOReader.new_from_callback(buffer)
+      source = OpenPGP::ArmorReader.new_from_callback(buffer, 5)
       do_decrypt(source, recipient, outfile)
     end
 
     def decrypt_file_for(infile:, recipient:, outfile: nil)
-      source = OpenPGP::IOReader.new_from_file(infile)
+      source = OpenPGP::ArmorReader.new_from_file(infile, 5)
       do_decrypt(source, recipient, outfile)
     end
 
@@ -90,7 +90,8 @@ module Sequoia
         buffer = StringIO.new
         sink = OpenPGP::IOWriter.new_from_callback(buffer)
       end
-      writer = OpenPGP::WriterStack.new_message(sink)
+      armored = OpenPGP::ArmorWriter(sink, PGP_ARMOR_KIND_MESSAGE)
+      writer = OpenPGP::WriterStack.new_message(armored)
       passwords = %w[p f]
 
       writer.encrypt(passwords, keys, 9, 0)
