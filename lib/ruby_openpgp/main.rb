@@ -84,12 +84,8 @@ module Sequoia
 
       keys = load_recipient_keys(recipients)
 
-      if outfile
-        sink = OpenPGP::IOWriter.new_from_file(outfile)
-      else
-        buffer = StringIO.new
-        sink = OpenPGP::IOWriter.new_from_callback(buffer)
-      end
+      buffer = StringIO.new
+      sink = OpenPGP::IOWriter.new_from_callback(buffer)
       writer = OpenPGP::WriterStack.new_message(sink)
       passwords = %w[p f]
 
@@ -99,15 +95,17 @@ module Sequoia
       writer.finalize
 
       if outfile
+        kind = PGP_ARMOR_KIND_FILE
         armored = OpenPGP::IOWriter.new_from_file(outfile)
       else
+        kind = PGP_ARMOR_KIND_MESSAGE
         armorbuff = StringIO.new
         armored = OpenPGP::IOWriter.new_from_callback(armorbuff)
       end
 
       buffer.rewind
       unarmored = OpenPGP::IOReader.new_from_callback(buffer)
-      armorer = OpenPGP::ArmorWriter(armored, PGP_ARMOR_KIND_MESSAGE)
+      armorer = OpenPGP::ArmorWriter(armored, kind)
       unarmored.copy(armorer, buffer.string.length)
       armorer.finalize
       return unless armored
