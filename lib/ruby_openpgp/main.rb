@@ -105,13 +105,13 @@ module Sequoia
 
       buffer.rewind
       unarmored = OpenPGP::IOReader.new_from_callback(buffer)
-      armorer = OpenPGP::ArmorWriter(armored, kind)
+      armorer = OpenPGP::ArmorWriter.new(armored, kind, [])
       unarmored.copy(armorer, buffer.string.length)
       armorer.finalize
-      return unless armored
+      return unless armorbuff
 
-      armored.rewind
-      armored.read
+      armorbuff.rewind
+      armorbuff.read
     end
 
     def do_decrypt(source, recipient, outfile = nil)
