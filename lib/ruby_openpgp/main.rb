@@ -90,8 +90,7 @@ module Sequoia
         buffer = StringIO.new
         sink = OpenPGP::IOWriter.new_from_callback(buffer)
       end
-      armored = OpenPGP::ArmorWriter(sink, PGP_ARMOR_KIND_MESSAGE)
-      writer = OpenPGP::WriterStack.new_message(armored)
+      writer = OpenPGP::WriterStack.new_message(sink)
       passwords = %w[p f]
 
       writer.encrypt(passwords, keys, 9, 0)
@@ -99,10 +98,22 @@ module Sequoia
       writer.write_all(plaintext)
       writer.finalize
 
-      return unless buffer
+      if outfile
+        armored = OpenPGP::IOWriter.new_from_file(outfile)
+      else
+        armorbuff = StringIO.new
+        armored = OpenPGP::IOWriter.new_from_callback(armorbuff)
+      end
 
       buffer.rewind
-      buffer.read
+      unarmored = OpenPGP::IOReader.new_from_callback(buffer)
+      armorer = OpenPGP::ArmorWriter(armored, PGP_ARMOR_KIND_MESSAGE)
+      unarmored.copy(armorer, buffer.string.length)
+      armorer.finalize
+      return unless armored
+
+      armored.rewind
+      armored.read
     end
 
     def do_decrypt(source, recipient, outfile = nil)
