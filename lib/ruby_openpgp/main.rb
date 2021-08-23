@@ -15,7 +15,7 @@ module Sequoia
 
     def decrypt_for(ciphertext:, recipient:, outfile: nil)
       buffer = StringIO.new(ciphertext)
-      source = OpenPGP::ArmorReader.new_from_callback(buffer, 5)
+      source = OpenPGP::ArmorReader.new_from_bytes(buffer, 5)
       do_decrypt(source, recipient, outfile)
     end
 
