@@ -14,13 +14,12 @@ module Sequoia
     end
 
     def decrypt_for(ciphertext:, recipient:, outfile: nil)
-      buffer = StringIO.new(ciphertext)
-      source = OpenPGP::ArmorReader.new_from_bytes(buffer, 5)
+      source = OpenPGP::ArmorReader.new_from_bytes(ciphertext, PGP_ARMOR_KIND_MESSAGE)
       do_decrypt(source, recipient, outfile)
     end
 
     def decrypt_file_for(infile:, recipient:, outfile: nil)
-      source = OpenPGP::ArmorReader.new_from_file(infile, 5)
+      source = OpenPGP::ArmorReader.new_from_file(infile, PGP_ARMOR_KIND_FILE)
       do_decrypt(source, recipient, outfile)
     end
 
