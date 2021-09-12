@@ -105,7 +105,7 @@ module Sequoia
       buffer.rewind
       unarmored = OpenPGP::IOReader.new_from_callback(buffer)
       armorer = OpenPGP::ArmorWriter.new(armored, kind, [])
-      unarmored.copy(armorer, buffer.string.length)
+      unarmored.copy(armorer, buffer.length)
       armorer.finalize
       return unless armorbuff
 
