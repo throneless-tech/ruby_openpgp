@@ -88,7 +88,7 @@ module Sequoia
       writer = OpenPGP::WriterStack.new_message(sink)
       passwords = %w[p f]
 
-      writer.encrypt(passwords, keys, 9, 0)
+      writer.encrypt(passwords, keys, 0)
       writer.literal
       writer.write_all(plaintext)
       writer.finalize

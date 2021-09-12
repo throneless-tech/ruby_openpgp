@@ -20,7 +20,7 @@ module OpenPGP
   attach_function :pgp_writer_stack_write_all, [:error, :writer_stack, :pointer, :size_t], :int
   attach_function :pgp_literal_writer_new, [:error, :writer_stack], :writer_stack
   attach_function :pgp_arbitrary_writer_new, [:error, :writer_stack, :uint8], :writer_stack
-  attach_function :pgp_encryptor_new, [:error, :writer_stack, :pointer, :size_t, :pointer, :size_t, :uint8, :uint8], :writer_stack
+  attach_function :pgp_encryptor_new, [:error, :writer_stack, :pointer, :size_t, :pointer, :size_t, :uint8], :writer_stack
   attach_function :pgp_recipient_free, [:recipient], :void
   attach_function :pgp_recipient_new, [:keyid, :key], :recipient
   attach_function :pgp_signer_new, [:error, :writer_stack, :pointer, :size_t, :uint8], :writer_stack
@@ -100,7 +100,7 @@ module OpenPGP
       @ref = tmp
     end
 
-    def encrypt(ps, recipients, mode, cipher)
+    def encrypt(ps, recipients, cipher)
       error = FFI::MemoryPointer.new(:pointer, 1)
       if ps && ps.length > 0
         passwords = FFI::MemoryPointer.new(:pointer, ps.length)
@@ -125,7 +125,7 @@ module OpenPGP
         recipients_len = 0
       end
 
-      tmp = OpenPGP.pgp_encryptor_new(error, @ref, passwords, passwords_len, recipients_ptr, recipients_len, mode, cipher)
+      tmp = OpenPGP.pgp_encryptor_new(error, @ref, passwords, passwords_len, recipients_ptr, recipients_len, cipher)
       if !error.get_pointer(0).null?
         raise Error.new(error.get_pointer(0))
       end
