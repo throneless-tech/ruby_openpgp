@@ -6,6 +6,7 @@ require_relative "./error"
 require_relative "./io"
 require_relative "./fingerprint"
 require_relative "./key_amalgamation"
+require_relative "./amalgamation"
 require_relative "./packet/key"
 require_relative "./packet/user_id"
 require_relative "./policy"
@@ -129,7 +130,7 @@ module OpenPGP
     def next_user_id
       # TODO: add support for sigo and rso later!
       user_id = OpenPGP.pgp_cert_valid_user_id_iter_next(@ref, nil, nil)
-      UserID.new(user_id) unless user_id.null?
+      ValidUserIDAmalgamation.new(user_id) unless user_id.null?
     end
   end
 

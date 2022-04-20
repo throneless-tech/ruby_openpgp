@@ -1,6 +1,7 @@
 require "ffi"
 require "objspace"
 
+require_relative "../packet"
 require_relative "../stdio"
 
 module OpenPGP
@@ -11,10 +12,12 @@ module OpenPGP
 
   attach_function :pgp_user_id_debug, [:user_id], :strptr
   attach_function :pgp_user_id_free, [:user_id], :void
-  attach_function :pgp_user_id_email, %i[error user_id string], :int
-  attach_function :pgp_user_id_email_normalized, %i[error user_id string], :int
+  attach_function :pgp_user_id_email, %i[error user_id pointer], :int
+  attach_function :pgp_user_id_email_normalized, %i[error user_id pointer], :int
 
   class UserID < Packet
+    attr_reader :ref
+
     def initialize(user_id)
       @ref = user_id
       ObjectSpace.define_finalizer(self, method(:release).to_proc)

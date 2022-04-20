@@ -57,10 +57,15 @@ module Sequoia
       do_verify_detached(plaintext, source, sender, password, outfile)
     end
 
+    def fingerprint_of(key)
+      OpenPGP::Cert.new_from_bytes(key).fingerprint.to_s
+    end
+
     def emails_of(keys:)
       Array(keys).map do |key|
         cert = OpenPGP::Cert.new_from_bytes(key)
         cert.user_ids(OpenPGP::StandardPolicy.new, Time.now.to_i)
+            .map(&:user_id)
             .map(&:email_normalized)
       end.flatten
     end
@@ -177,7 +182,8 @@ module Sequoia
       writer.write_all(plaintext)
       writer.finalize
 
-      write_armored(buffer.rewind, outfile)
+      buffer.rewind
+      write_armored(buffer, outfile)
     end
 
     def do_decrypt(source, recipient, outfile = nil)
@@ -208,7 +214,8 @@ module Sequoia
       writer.write_all(plaintext)
       writer.finalize
 
-      write_armored(buffer.rewind, outfile)
+      buffer.rewind
+      write_armored(buffer, outfile)
     end
 
     def do_verify(source, sender, outfile = nil)
