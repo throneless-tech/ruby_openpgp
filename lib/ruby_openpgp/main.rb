@@ -57,8 +57,10 @@ module Sequoia
       do_verify_detached(plaintext, source, sender, password, outfile)
     end
 
-    def fingerprint_of(key)
-      OpenPGP::Cert.new_from_bytes(key).fingerprint.to_s
+    def fingerprints_of(keys:)
+      Array(keys).map do |key|
+        OpenPGP::Cert.new_from_bytes(key).fingerprint.to_s
+      end.flatten
     end
 
     def emails_of(keys:)
