@@ -70,9 +70,7 @@ module Sequoia
 
     private
 
-    def check_message(_message)
-      # This doesn't seem to be working correctly right now, so commented out
-      #
+    def check_message(message)
       message_layers = message.layers.to_a
 
       # check that length is 2
