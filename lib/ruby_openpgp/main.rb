@@ -77,7 +77,7 @@ module Sequoia
       raise "unexpected length of message structure" unless message_layers.length == 2
 
       # check that it is one compression layer and one signature group
-      variants = message_layers.map&.variant
+      variants = message_layers.map(&:variant)
 
       raise "unexpected ordering of message layers" unless variants == [PGP_MESSAGE_LAYER_COMPRESSION,
                                                                         PGP_MESSAGE_LAYER_SIGNATURE_GROUP]
