@@ -14,47 +14,43 @@ module Sequoia
     end
 
     def decrypt_for(ciphertext:, recipient:, password: nil, outfile: nil)
-      @password = password
       source = OpenPGP::ArmorReader.new_from_bytes(ciphertext, PGP_ARMOR_KIND_MESSAGE)
       do_decrypt(source, recipient, password, outfile)
     end
 
     def decrypt_file_for(infile:, recipient:, password: nil, outfile: nil)
-      @password = password
       source = OpenPGP::ArmorReader.new_from_file(infile, PGP_ARMOR_KIND_FILE)
       do_decrypt(source, recipient, password, outfile)
     end
 
     def sign_with(plaintext:, sender:, password: nil, outfile: nil)
-      @password = password
-      do_sign(plaintext, sender, outfile)
+      do_sign(plaintext, sender, password, outfile)
     end
 
     def sign_file_with(infile:, sender:, password: nil, outfile: nil)
-      @password = password
       plaintext = File.read(infile)
-      do_sign(plaintext, sender, outfile)
+      do_sign(plaintext, sender, password, outfile)
     end
 
     def verify_from(ciphertext:, sender:, outfile: nil)
       source = OpenPGP::ArmorReader.new_from_bytes(ciphertext, PGP_ARMOR_KIND_MESSAGE)
-      do_verify(ciphertext, source, sender, password, outfile)
+      do_verify(source, sender, outfile)
     end
 
     def verify_file_from(infile:, sender:, outfile: nil)
       source = OpenPGP::ArmorReader.new_from_file(infile, PGP_ARMOR_KIND_FILE)
-      do_verify(source, sender, password, outfile)
+      do_verify(source, sender, outfile)
     end
 
     def verify_detached_from(plaintext:, signature:, sender:, outfile: nil)
       source = OpenPGP::ArmorReader.new_from_bytes(signature, PGP_ARMOR_KIND_MESSAGE)
-      do_verify_detached(plaintext, source, sender, password, outfile)
+      do_verify_detached(plaintext, source, sender, outfile)
     end
 
     def verify_detached_file_from(infile:, sigfile:, sender:, outfile: nil)
       plaintext = File.read(infile)
       source = OpenPGP::ArmorReader.new_from_file(sigfile, PGP_ARMOR_KIND_FILE)
-      do_verify_detached(plaintext, source, sender, password, outfile)
+      do_verify_detached(plaintext, source, sender, outfile)
     end
 
     def fingerprints_of(keys:)
@@ -188,10 +184,11 @@ module Sequoia
       write_armored(buffer, outfile)
     end
 
-    def do_decrypt(source, recipient, outfile = nil)
+    def do_decrypt(source, recipient, password, outfile)
       @cert = OpenPGP::Cert.new_from_bytes(recipient)
       @time = Time.now.to_i
       @policy = OpenPGP::StandardPolicy.new
+      @password = password
 
       reader = OpenPGP::Reader.new(source, method(:load_public_keys), method(:check_message), @time, @policy)
       reader = reader.decrypt(method(:load_session_keys), nil)
@@ -202,7 +199,8 @@ module Sequoia
       end
     end
 
-    def do_sign(plaintext, sender, outfile = nil)
+    def do_sign(plaintext, sender, password, outfile)
+      @password = password
       raise ArgumentError, "Plaintext must be a string!" unless plaintext.is_a?(String)
 
       keys = load_signing_keys(sender)
@@ -220,7 +218,7 @@ module Sequoia
       write_armored(buffer, outfile)
     end
 
-    def do_verify(source, sender, outfile = nil)
+    def do_verify(source, sender, outfile)
       @cert = OpenPGP::Cert.new_from_bytes(sender)
       @time = Time.now.to_i
       @policy = OpenPGP::StandardPolicy.new
