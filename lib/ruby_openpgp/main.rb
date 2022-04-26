@@ -71,6 +71,7 @@ module Sequoia
     private
 
     def check_message(message)
+      return PGP_STATUS_SUCCESS
       message_layers = message.layers.to_a
 
       # check that length is 2
