@@ -59,6 +59,12 @@ module Sequoia
       end.flatten
     end
 
+    def public_key_algo_of(keys:)
+      Array(keys).map do |key|
+        OpenPGP::Cert.new_from_bytes(key).public_key_algo
+      end.flatten
+    end
+
     def emails_of(keys:)
       Array(keys).map do |key|
         cert = OpenPGP::Cert.new_from_bytes(key)
