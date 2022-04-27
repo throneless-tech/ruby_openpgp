@@ -59,7 +59,7 @@ module Sequoia
       end.flatten
     end
 
-    def public_key_algo_of(keys:)
+    def public_key_algos_of(keys:)
       Array(keys).map do |key|
         OpenPGP::Cert.new_from_bytes(key).public_key_algo
       end.flatten
