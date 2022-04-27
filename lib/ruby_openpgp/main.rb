@@ -144,12 +144,11 @@ module Sequoia
       end.flatten
     end
 
-    def write_armored(buffer, outfile = nil)
+    def write_armored(buffer, kind, outfile = nil)
       if outfile
         kind = PGP_ARMOR_KIND_FILE
         armored = OpenPGP::IOWriter.new_from_file(outfile)
       else
-        kind = PGP_ARMOR_KIND_MESSAGE
         armorbuff = StringIO.new
         armored = OpenPGP::IOWriter.new_from_callback(armorbuff)
       end
@@ -180,7 +179,7 @@ module Sequoia
       writer.finalize
 
       buffer.rewind
-      write_armored(buffer, outfile)
+      write_armored(buffer, PGP_ARMOR_KIND_MESSAGE, outfile)
     end
 
     def do_decrypt(source, recipient, password, outfile)
@@ -214,7 +213,7 @@ module Sequoia
       writer.finalize
 
       buffer.rewind
-      write_armored(buffer, outfile)
+      write_armored(buffer, PGP_ARMOR_KIND_SIGNATURE, outfile)
     end
 
     def do_verify(source, sender, outfile)
