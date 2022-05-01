@@ -213,7 +213,7 @@ module Sequoia
       sink = OpenPGP::IOWriter.new_from_callback(buffer)
       writer = OpenPGP::WriterStack.new_message(sink)
 
-      writer.sign(keys, 0)
+      writer.sign_detached(keys, 0)
       writer.literal
       writer.write_all(plaintext)
       writer.finalize
