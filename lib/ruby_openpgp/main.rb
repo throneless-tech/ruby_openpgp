@@ -32,6 +32,15 @@ module Sequoia
       do_sign(plaintext, sender, password, outfile)
     end
 
+    def sign_detached_with(plaintext:, sender:, password: nil, outfile: nil)
+      do_sign_detached(plaintext, sender, password, outfile)
+    end
+
+    def sign_detached_file_with(infile:, sender:, password: nil, outfile: nil)
+      plaintext = File.read(infile)
+      do_sign_detached(plaintext, sender, password, outfile)
+    end
+
     def verify_from(ciphertext:, sender:, outfile: nil)
       source = OpenPGP::ArmorReader.new_from_bytes(ciphertext, PGP_ARMOR_KIND_MESSAGE)
       do_verify(source, sender, outfile)
@@ -43,7 +52,7 @@ module Sequoia
     end
 
     def verify_detached_from(plaintext:, signature:, sender:, outfile: nil)
-      source = OpenPGP::ArmorReader.new_from_bytes(signature, PGP_ARMOR_KIND_MESSAGE)
+      source = OpenPGP::ArmorReader.new_from_bytes(signature, PGP_ARMOR_KIND_SIGNATURE)
       do_verify_detached(plaintext, source, sender, outfile)
     end
 
@@ -213,6 +222,25 @@ module Sequoia
       sink = OpenPGP::IOWriter.new_from_callback(buffer)
       writer = OpenPGP::WriterStack.new_message(sink)
 
+      writer.sign(keys, 0)
+      writer.literal
+      writer.write_all(plaintext)
+      writer.finalize
+
+      buffer.rewind
+      write_armored(buffer, PGP_ARMOR_KIND_SIGNATURE, outfile)
+    end
+
+    def do_sign_detached(plaintext, sender, password, outfile)
+      @password = password
+      raise ArgumentError, "Plaintext must be a string!" unless plaintext.is_a?(String)
+
+      keys = load_signing_keys(sender)
+
+      buffer = StringIO.new
+      sink = OpenPGP::IOWriter.new_from_callback(buffer)
+      writer = OpenPGP::WriterStack.new_message(sink)
+
       writer.sign_detached(keys, 0)
       writer.literal
       writer.write_all(plaintext)
@@ -221,6 +249,7 @@ module Sequoia
       buffer.rewind
       write_armored(buffer, PGP_ARMOR_KIND_SIGNATURE, outfile)
     end
+
 
     def do_verify(source, sender, outfile)
       @cert = OpenPGP::Cert.new_from_bytes(sender)
